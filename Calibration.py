@@ -26,16 +26,25 @@ def read_calibration(directory: str) -> (np.ndarray,np.ndarray,np.ndarray):
 def polynomialfit(x: np.ndarray ,y: np.ndarray, order: int, std: np.ndarray | None = None) -> np.ndarray:
     """Currently does not do a weighted leastsquares which could be an improvement as we know the standard deviation
     of the datapoints. however numpy implements polyfit with weights wrongly so rather do least squares when implementing"""
-    coefficients = np.polyfit(x, y, order)
-    return coefficients  # Highest power first
+    fit, res, *_ = np.polyfit(x, y, order, full=True)
+    yhat = np.polyval(fit, x)                         # or [p(z) for z in x]
+    ybar = np.sum(y)/len(y)          # or sum(y)/len(y)
+    ssreg = np.sum((y-yhat)**2)   # or sum([ (yihat - ybar)**2 for yihat in yhat])
+    sstot = np.sum((y - ybar)**2)    # or sum([ (yi - ybar)**2 for yi in y])
+    return fit, 1 - ssreg/sstot  # Highest power first
 
 
 if __name__ == "__main__":
     mean, _ , velocity =  read_calibration('Group1')
-    regression = polynomialfit(mean, velocity, 4)
-    plt.scatter(mean, velocity)
-    plt.plot(mean, np.polyval(regression, mean))
+    Velo = np.linspace(0, 20, 100)
+    regression1,r1= polynomialfit(mean, velocity, 4)
+    regression2,r2 = polynomialfit(velocity, mean, 4)
+    plt.scatter(velocity, mean, color = 'r')
+    plt.plot(Velo, np.polyval(regression2, Velo), color = 'black')
+    plt.xlabel('$Flow velocity \quad [m/s]$')
+    plt.ylabel('$Voltage \quad [V]$')
     plt.show()
+    print(r1, r2, regression1, regression2)
 
 
 
