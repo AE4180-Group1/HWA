@@ -38,7 +38,8 @@ def fftautocorr(data: np.ndarray) -> (np.ndarray, int):
     var = np.var(data)  # Variance
     ndata = data - np.mean(data) # Normalized data
     ndata = np.pad(ndata, (0, len(data)), "constant") # padding normalised data with zeros
-    fft = np.fft.fft(ndata, len(data))  # Compute the FFT
+    print(f'mean fft {ndata.mean()}')
+    fft = np.fft.fft(ndata, size)  # Compute the FFT
     pwr = np.abs(fft) ** 2 # Get the power spectrum
     acorr = np.fft.ifft(pwr).real / var / len(data) # Calculate the autocorrelation from inverse FFT of the power spectrum
     return acorr[0:len(data)], len(data)
@@ -46,6 +47,7 @@ def fftautocorr(data: np.ndarray) -> (np.ndarray, int):
 def normalcorr(data: np.ndarray) -> np.ndarray:
     ndata = data - np.mean(data)  # Normalized data
     ndatapadded = np.pad(ndata, (0, len(data)), "constant")  # padding normalised data with zeros
+    print(f'mean normal {ndatapadded.mean()}')
     corr = np.correlate(ndata,ndatapadded,"valid")
     return corr[-1:0:-1]/corr[-1]
 
@@ -63,17 +65,22 @@ def integral_time(correlation: np.ndarray):
 if __name__ == "__main__":
     df = read("Group1", "CorrelationTest")
     autocor, fftautocor = plot_autocorr(df["Voltage"])
-    # np.savetxt("normalpadded.csv", autocor, delimiter=",")
-    # np.savetxt("fftpadded.csv", fftautocor, delimiter=",")
-    # normal = np.genfromtxt("normal2.csv", delimiter= ",")
-    # normal[-1] = 1.
-    # fft = np.genfromtxt("fft.csv", delimiter= ",")
-    # normalfull = np.genfromtxt("normal.csv", delimiter= ",")
-    # normalfull[-1] = 1.
-    # fftfull = np.genfromtxt("fft.csv", delimiter= ",")
+    np.savetxt("normalpadded.csv", autocor, delimiter=",")
+    np.savetxt("fftpadded.csv", fftautocor, delimiter=",")
+    # # normal = np.genfromtxt("normal2.csv", delimiter= ",")
+    # # normal[-1] = 1.
+    # # fft = np.genfromtxt("fft.csv", delimiter= ",")
+    # # normalfull = np.genfromtxt("normal.csv", delimiter= ",")
+    # # normalfull[-1] = 1.
+    # # fftfull = np.genfromtxt("fft.csv", delimiter= ",")
     normalp= np.genfromtxt("normalpadded.csv", delimiter= ",")
     # normalfull[-1] = 1.
     fftp = np.genfromtxt("fftpadded.csv", delimiter= ",")
-    print(integral_time(normalp[0:25000]), integral_time(fftp[0:25000]))
+    # print(integral_time(normalp[0:1000]), integral_time(fftp[0:1000]))
+    # print(integral_time(normalp[0:10000]), integral_time(fftp[0:10000]))
+    # print(integral_time(normalp[0:20000]), integral_time(fftp[0:20000]))
+    print(integral_time(normalp[0:24200]), integral_time(fftp[0:24200]))
+    # print(integral_time(normalp[0:50000]), integral_time(fftp[0:50000]))
+    # print(integral_time(normalp[0:75000]), integral_time(fftp[0:75000]))
     print(integral_time(normalp), integral_time(fftp))
 
